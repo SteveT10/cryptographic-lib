@@ -12,7 +12,6 @@ public class testMain {
         //testKeccek();
         //testByteFuncs();
         //testBigIntConvert();
-        BigInteger r = ((new BigInteger("2")).pow(446)).subtract(new BigInteger("13818066809895115352007386748515426880336692474882178609894547503885"));
 
 
         //testScalarMultiply(BigInteger.ZERO);
