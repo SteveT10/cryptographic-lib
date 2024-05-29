@@ -5,11 +5,11 @@ import java.math.BigInteger;
  * @author Steven Tieu
  * @version 05-27-2024
  */
-public class Edwards448Point {
+public class Ed448pt {
     private BigInteger x;
     private BigInteger y;
 
-    public Edwards448Point() {
+    public Ed448pt() {
         this(BigInteger.ZERO, BigInteger.ONE);
     }
 
@@ -20,12 +20,12 @@ public class Edwards448Point {
      * @param x is the x-coordinate of the point.
      * @param y is the y-coordinate of the point.
      */
-    public Edwards448Point(BigInteger x, BigInteger y) {
+    public Ed448pt(BigInteger x, BigInteger y) {
         this.x = x;
         this.y = y;
     }
 
-    public Edwards448Point(boolean xLsb, BigInteger y, BigInteger d, BigInteger p) {
+    public Ed448pt(boolean xLsb, BigInteger y, BigInteger d, BigInteger p) {
         BigInteger denom = y.pow(2);
         denom = denom.multiply(d.negate());
         denom = denom.add(BigInteger.ONE);
@@ -62,7 +62,7 @@ public class Edwards448Point {
      * @param other is the other Edwards point to sum with this point.
      * @return the sum of this Edwards point and the other.
      */
-    public Edwards448Point add(Edwards448Point other, BigInteger d, BigInteger p) {
+    public Ed448pt add(Ed448pt other, BigInteger d, BigInteger p) {
         BigInteger xNumer = x.multiply(other.getY());
         xNumer = xNumer.add(y.multiply(other.getX()));
 
@@ -80,7 +80,7 @@ public class Edwards448Point {
         BigInteger sumX = xNumer.multiply(xDenom.modInverse(p));
         BigInteger sumY = yNumer.multiply(yDenom.modInverse(p));
 
-        return new Edwards448Point(sumX.mod(p), sumY.mod(p));
+        return new Ed448pt(sumX.mod(p), sumY.mod(p));
     }
 
     /**
@@ -89,11 +89,11 @@ public class Edwards448Point {
      * @param scalar is the scalar to multiply with.
      * @return the product of multiplying this Edwards point by the scalar.
      */
-    public Edwards448Point multiply(BigInteger scalar, BigInteger d, BigInteger p) {
-        Edwards448Point V = new Edwards448Point();
+    public Ed448pt multiply(BigInteger scalar, BigInteger d, BigInteger p) {
+        Ed448pt V = new Ed448pt();
         if(scalar.compareTo(BigInteger.ZERO) != 0) {
             String bitStr = scalar.toString(2);
-            V = new Edwards448Point(x, y);
+            V = new Ed448pt(x, y);
             for(int i = bitStr.length() - 1; i >= 0; i--) {
                 V = V.add(V, d, p);
                 if(bitStr.charAt(i) == '1') {
@@ -109,8 +109,8 @@ public class Edwards448Point {
      * 
      * @return the opposite of this Edwards point.
      */
-    public Edwards448Point getOpposite() {
-        return new Edwards448Point(x.negate(), y);
+    public Ed448pt getOpposite() {
+        return new Ed448pt(x.negate(), y);
     }
 
     /**

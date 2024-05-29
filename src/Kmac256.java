@@ -1,110 +1,109 @@
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-public class Kmacxof256 {
+public class Kmac256 {
+    
+    // /**
+    //  * Computes an hash function for a given message using
+    //  * Kmacxof256. 
+    //  * 
+    //  * Follows the notation in the NIST Publication 800-185
+    //  * except for parameter m which is converted to a
+    //  * byte array in KMACX. 
+    //  * 
+    //  * @param message is the message to compute the hash for.
+    //  * @return the hash as bytes.
+    //  */
+    // public static byte[] computeHash(String message) {
+    //     return kmac("", message, 512, "D");
+    // }
 
+    // /**
+    //  * Computes an authentication tag for a given message using
+    //  * Kmacxof256 and a pass phrase.
+    //  * 
+    //  * Follows the notation in the NIST Publication 800-185
+    //  * except for parameter m which is converted to a
+    //  * byte array in KMACX. 
+    //  * 
+    //  * @param message is the message to create a authentication tag for.
+    //  * @param pw is the pass phrases used to create the authentication tag.
+    //  * @return the authentication tag in bytes.
+    //  */
+    // public static byte[] computeAuthTag(String message, String pw) {
+    //     return kmac(pw, message, 512, "T");
+    // }
+
+    // /**
+    //  * Symmetrically encrypts an given message usign a pass phrase and Kmacxof256.
+    //  * 
+    //  * Follows the notation in the NIST Publication 800-185
+    //  * except for parameter m which is converted to a
+    //  * byte array KMACX. 
+    //  * 
+    //  * @param message is the message to encrypt.
+    //  * @param pw is the pass phrase to use during ecryption.
+    //  * @return cryptogram(z, c, t). See decrypt() function for description of z, c, t.
+    //  */
+    // public static byte[][] encrypt(String message, String pw) {
+    //     byte[][] cryptogram = new byte[3][];
+    //     SecureRandom rand = new SecureRandom();
+    //     byte[] z = new byte[64]; //64 * 8 = 512
+    //     rand.nextBytes(z);
+
+    //     byte[] keka = kmac(Util.byteArrToStr(z) + pw, "", 1024, "S");
+    //     byte[] ke = new byte[keka.length / 2];
+    //     System.arraycopy(keka, 0, ke, 0, keka.length / 2);
+    //     byte[] ka = new byte[keka.length / 2];
+    //     System.arraycopy(keka, 0, ka, 0, keka.length / 2);
+
+    //     byte[] m = Util.strToByteArr(message);
+    //     byte[] c = kmac(Util.byteArrToStr(ke), "", m.length, "SKE");
+    //     for(int i = 0; i < Math.min(c.length, m.length); i++) {
+    //         c[i] = Util.byteXor(c[i], m[i]);
+    //     }
+    //     byte[] t = kmac(Util.byteArrToStr(ka), message, 512, "SKA");
+    //     cryptogram[0] = z;
+    //     cryptogram[1] = c;
+    //     cryptogram[2] = t;
+    //     return cryptogram;
+    // }
+
+    // /**
+    //  * Symmetrically decrypts a given cryptogram using the given pass phrase.
+    //  * 
+    //  * @param cryptogram is the symmetric cryptogram(z, c, t).
+    //  *      z is the randomly selected number from 0 to (2^512) - 1 during encryption.
+    //  *      c is the ciphertext.
+    //  *      t is the authentication tag.
+    //  * @param pw is the pass phrase used for decrypting the cryptogram.
+    //  * @return the decrypted plaintext.
+    //  */
+    // public static String decrypt(byte[][] cryptogram, String pw) {
+    //     String ret = "Mismatching Tags, rejecting message... Please check your passphrase input";
+    //     byte[] keka = kmac(Util.byteArrToStr(cryptogram[0]) + pw, "", 1024, "S");
+    //     byte[] ke = new byte[keka.length / 2];
+    //     System.arraycopy(keka, 0, ke, 0, keka.length / 2);
+    //     byte[] ka = new byte[keka.length / 2];
+    //     System.arraycopy(keka, 0, ka, 0, keka.length / 2); 
+
+    //     byte[] m = kmac(Util.byteArrToStr(ke), "", cryptogram[1].length, "SKE");
+    //     for(int i = 0; i < Math.min(m.length, cryptogram[1].length); i++) {
+    //         m[i] = Util.byteXor(m[i], cryptogram[1][i]);
+    //     }
+    //     byte[] t = kmac(Util.byteArrToStr(ka), Util.byteArrToStr(m), 512, "SKA");
+
+    //     //String mStr = Util.byteArrToStr(m);
+    //     //System.out.println("\nMessage was " + mStr);
+    //     if(Arrays.compare(cryptogram[2], t) == 0) {
+    //         ret = Util.byteArrToStr(m);
+    //     }
+    //     return ret;
+    // }
+    
     /**
-     * Computes an hash function for a given message using
-     * Kmacxof256. 
-     * 
-     * Follows the notation in the NIST Publication 800-185
-     * except for parameter m which is converted to a
-     * byte array in KMACX. 
-     * 
-     * @param message is the message to compute the hash for.
-     * @return the hash as bytes.
-     */
-    public static byte[] computeHash(String message) {
-        return KMACXOF256("", message, 512, "D");
-    }
-
-    /**
-     * Computes an authentication tag for a given message using
-     * Kmacxof256 and a pass phrase.
-     * 
-     * Follows the notation in the NIST Publication 800-185
-     * except for parameter m which is converted to a
-     * byte array in KMACX. 
-     * 
-     * @param message is the message to create a authentication tag for.
-     * @param pw is the pass phrases used to create the authentication tag.
-     * @return the authentication tag in bytes.
-     */
-    public static byte[] computeAuthTag(String message, String pw) {
-        return KMACXOF256(pw, message, 512, "T");
-    }
-
-    /**
-     * Symmetrically encrypts an given message usign a pass phrase and Kmacxof256.
-     * 
-     * Follows the notation in the NIST Publication 800-185
-     * except for parameter m which is converted to a
-     * byte array KMACX. 
-     * 
-     * @param message is the message to encrypt.
-     * @param pw is the pass phrase to use during ecryption.
-     * @return cryptogram(z, c, t). See decrypt() function for description of z, c, t.
-     */
-    public static byte[][] encrypt(String message, String pw) {
-        byte[][] cryptogram = new byte[3][];
-        SecureRandom rand = new SecureRandom();
-        byte[] z = new byte[64]; //64 * 8 = 512
-        rand.nextBytes(z);
-
-        byte[] keka = KMACXOF256(byteArrToStr(z) + pw, "", 1024, "S");
-        byte[] ke = new byte[keka.length / 2];
-        System.arraycopy(keka, 0, ke, 0, keka.length / 2);
-        byte[] ka = new byte[keka.length / 2];
-        System.arraycopy(keka, 0, ka, 0, keka.length / 2);
-
-        byte[] m = strToByteArr(message);
-        byte[] c = KMACXOF256(byteArrToStr(ke), "", m.length, "SKE");
-        for(int i = 0; i < Math.min(c.length, m.length); i++) {
-            c[i] = byteXor(c[i], m[i]);
-        }
-        byte[] t = KMACXOF256(byteArrToStr(ka), message, 512, "SKA");
-        cryptogram[0] = z;
-        cryptogram[1] = c;
-        cryptogram[2] = t;
-        return cryptogram;
-    }
-
-    /**
-     * Symmetrically decrypts a given cryptogram using the given pass phrase.
-     * 
-     * @param cryptogram is the symmetric cryptogram(z, c, t).
-     *      z is the randomly selected number from 0 to (2^512) - 1 during encryption.
-     *      c is the ciphertext.
-     *      t is the authentication tag.
-     * @param pw is the pass phrase used for decrypting the cryptogram.
-     * @return the decrypted plaintext.
-     */
-    public static String decrypt(byte[][] cryptogram, String pw) {
-        String ret = "Mismatching Tags, rejecting message... Please check your passphrase input";
-        byte[] keka = KMACXOF256(byteArrToStr(cryptogram[0]) + pw, "", 1024, "S");
-        byte[] ke = new byte[keka.length / 2];
-        System.arraycopy(keka, 0, ke, 0, keka.length / 2);
-        byte[] ka = new byte[keka.length / 2];
-        System.arraycopy(keka, 0, ka, 0, keka.length / 2); 
-
-        byte[] m = KMACXOF256(byteArrToStr(ke), "", cryptogram[1].length, "SKE");
-        for(int i = 0; i < Math.min(m.length, cryptogram[1].length); i++) {
-            m[i] = byteXor(m[i], cryptogram[1][i]);
-        }
-        byte[] t = KMACXOF256(byteArrToStr(ka), byteArrToStr(m), 512, "SKA");
-
-        //String mStr = byteArrToStr(m);
-        //System.out.println("\nMessage was " + mStr);
-        if(Arrays.compare(cryptogram[2], t) == 0) {
-            ret = byteArrToStr(m);
-        }
-        return ret;
-    }
-
-    /**
-     * KMACXOF256 primitive according to NIST Special Publication 800-185, the only 
+     * kmac primitive according to NIST Special Publication 800-185, the only 
      * exception being that L is the byte width rather than bit width.
      * Additional support function used to convert between bytes and Strings in Java.
      * 
@@ -114,8 +113,8 @@ public class Kmacxof256 {
      * @param S is an optional customization string.
      * @return output of Kmacof256 as bytes.
      */
-    public static byte[] KMACXOF256(String K, String X, int L, String S) {
-        byte[] newX = concateByteArr(bytePad(encodeString(K), 136), strToByteArr(X));
+    public static byte[] kmac(String K, String X, int L, String S) {
+        byte[] newX = concateByteArr(bytePad(encodeString(K), 136), Util.strToByteArr(X));
         newX = concateByteArr(newX, rightEncode(0));
         return cShake256(newX, L, "KMAC", S);
     }
@@ -152,7 +151,7 @@ public class Kmacxof256 {
         int j = ptr;
         for(int i = 0; i < X.length; i++) {
             j++;
-            state[j] = byteXor(state[j], X[i]);
+            state[j] = Util.byteXor(state[j], X[i]);
             if(j >= rsize) {
                 state = keccakf(state);
                 j = 0;
@@ -161,8 +160,8 @@ public class Kmacxof256 {
         ptr = j;
 
         //xof
-        state[ptr] = byteXor(state[ptr], (byte) 0x1F);
-        state[rsize - 1] = byteXor(state[rsize - 1], (byte) 0x04);
+        state[ptr] = Util.byteXor(state[ptr], (byte) 0x1F);
+        state[rsize - 1] = Util.byteXor(state[rsize - 1], (byte) 0x04);
         state = keccakf(state);
         ptr = 0;
         
@@ -187,7 +186,7 @@ public class Kmacxof256 {
      * @return encoded byte array of S.
      */
     public static byte[] encodeString(String S) {
-        byte[] sBytes = strToByteArr(S);        
+        byte[] sBytes = Util.strToByteArr(S);        
         byte[] bitWidthNum = leftEncode(sBytes.length * 8); //byte = 8 bits
         //byte[] ret = new byte[sBytes.length + bitWidthNum.length];
         //System.arraycopy(bitWidthNum, 0, ret, 0, bitWidthNum.length);
@@ -273,18 +272,6 @@ public class Kmacxof256 {
     }
 
     /**
-     * Performs exclusive or bit operation on the two input bytes.
-     * Normal ^ operations will not work on byte types without casting.
-     * 
-     * @param x is the first input byte.
-     * @param y is the second input byte.
-     * @return is the XOR result of the two input bytes.
-     */
-    public static byte byteXor(byte x, byte y) {
-        return (byte) (((int) x ^ (int) y) & 0xFF);
-    }
-
-    /**
      * Converts an array of bytes (8-bit) to an equivalent array of longs (64-bit).
      * Used at beginnning of keccakf() function.
      * 
@@ -324,8 +311,8 @@ public class Kmacxof256 {
      * @return state after permutation.
      */
     public static byte[] keccakf(byte[] state) {
-        Kmacxof256.swapWordEndian(state);
-        long[] st = Kmacxof256.byteArrToLongArr(state);
+        swapWordEndian(state);
+        long[] st = byteArrToLongArr(state);
         final long[] keccakf_rndc = {
             0x0000000000000001L, 0x0000000000008082L, 0x800000000000808aL,
             0x8000000080008000L, 0x000000000000808bL, 0x0000000080000001L,
@@ -387,8 +374,8 @@ public class Kmacxof256 {
             st[0] ^= keccakf_rndc[r]; 
         }
 
-        byte[] ret = Kmacxof256.longArrToByteArr(st);
-        Kmacxof256.swapWordEndian(ret);
+        byte[] ret = longArrToByteArr(st);
+        swapWordEndian(ret);
         return ret;
     }
 
@@ -421,40 +408,6 @@ public class Kmacxof256 {
                 state[((i + 1) * 8) - j - 1] = temp;
             }
         }
-    }
-
-    /**
-     * Converts a string into a byte array using ISO-8859-1 charset.
-     * 
-     * @param S is the string to convert to bytes.
-     * @return byte array representing S in ISO-8859-1 charset.
-     */
-    public static byte[] strToByteArr(String S) {
-        byte[] ret;
-        try {
-            ret = S.getBytes("ISO-8859-1");
-        } catch (UnsupportedEncodingException err) {
-            System.out.println("Error with strToByteArr!");
-            ret = new byte[1];
-        }
-        return ret;
-    }
-
-    /**
-     * Converts a byte array into a string using ISO-8859-1 charset.
-     * 
-     * @param b bytes to convert to a string.
-     * @return string representing b in ISO-8859-1 charset.
-     */
-    public static String byteArrToStr(byte[] b) {
-        String ret;
-        try {
-            ret = new String(b, "ISO-8859-1");
-        } catch (UnsupportedEncodingException err) {
-            ret = "Error with byteArrToString!";
-            System.out.println(ret);
-        }
-        return ret;
     }
 
     /**

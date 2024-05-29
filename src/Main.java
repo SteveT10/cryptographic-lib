@@ -1,11 +1,13 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.io.PrintStream;
 
 public class Main {
 
     
     public static void main(String[] args) {
+        App app = new App();
         String fileArg = "";
         if(args.length > 0) {
             fileArg = args[0]; 
@@ -25,10 +27,10 @@ public class Main {
             switch(select) {
                 case 1: 
                     System.out.println("Entering Symmetric Service...\n");
-                    runSymmetricApp(input, fileArg);
+                    runSymmetric(input, fileArg, app);
                 case 2:
                     System.out.println("Entering Asymmetric Service...\n");
-                    runAsymmetricApp(input, fileArg);
+                    runAsymmetric(input, fileArg, app);
                     break;
                 case 3: 
                     exit = true;
@@ -41,11 +43,13 @@ public class Main {
         input.close();
     }
 
-    public static void runAsymmetricApp(Scanner input,  String fileArg) {
+    public static void runAsymmetric(Scanner input,  String fileArg, App app) {
         String m;
         String pw;
+        String path;
         boolean exit = false;
-        Edwards448 eds = new Edwards448();
+        EccGram cache;
+        Ed448pt key = null;
         
         while(!exit) {
             pw = "";
@@ -63,25 +67,33 @@ public class Main {
             switch(select) {
                 case 1: 
                     pw = getUserText(input, "Please enter a passphrase:");
-                    eds.generateKeyPair(pw);
+                    key = app.generateKeyPair(pw);
+                    path = getUserText(input, "Please enter the file path to write the public key to: ");
+                    writeToFile(key.toString(), path);
+                    path = getUserText(input, "Please enter the file path to write the encrypted private key to: ");
+                    writeToFile(app.getEncryptedPrivateKey().toString(), path);
+                    System.out.println("\nSuccessfully produced a key pair under your passphrase!\n");
                     break;
                 case 2:
                     m = getText(input, fileArg, "encryptInput.txt");
-                    eds.encrypt(m);
+                    path = getUserText(input, "Please enter the file path to the public key: ");
+
+                    //app.encrypt(m, publicKey);
+            
                     break;
                 case 3:
                     pw = getUserText(input, "Please enter the passphrase:");
-                    System.out.println(eds.decrypt(pw));
+                    //System.out.println(app.decrypt(pw));
                     break;
                 case 4:
                     m = getText(input, fileArg, "encryptInput.txt");
                     pw = getUserText(input, "Please enter a passphrase:");
-                    eds.generateSignature(m, pw);
+                    app.generateSignature(m, pw);
                     break;
                 case 5:
                     m = getText(input, fileArg, "encryptInput.txt");
                     pw = getUserText(input, "Please enter a passphrase:");
-                    eds.verifySignature(m);
+                    //app.verifySignature(m);
                     break;
                 case 6: 
                     exit = true;
@@ -94,7 +106,7 @@ public class Main {
         }      
     }
 
-    public static void runSymmetricApp(Scanner input, String fileArg) {
+    public static void runSymmetric(Scanner input, String fileArg, App app) {
         String m;
         String pw;
         boolean exit = false;
@@ -115,7 +127,7 @@ public class Main {
             switch(select) {
                 case 1: 
                     m = getText(input, fileArg, "hashInput.txt");
-                    byte[] temp = Kmacxof256.computeHash(m);
+                    byte[] temp = app.computeHash(m);
                     System.out.println("\nHash: ");
                     for(int i = 0; i < temp.length; i++) {
                         System.out.print(Integer.toHexString(temp[i] & 0xFF));
@@ -126,7 +138,7 @@ public class Main {
                 case 2:
                     m = getText(input, fileArg, "tagInput.txt");
                     pw = getUserText(input, "Please enter a passphrase:");
-                    temp = Kmacxof256.computeAuthTag(m, pw);
+                    temp = app.computeAuthTag(m, pw);
                     System.out.println("\nTag: ");
                     for(int i = 0; i < temp.length; i++) {
                         System.out.print(Integer.toHexString(temp[i] & 0xFF));
@@ -137,13 +149,13 @@ public class Main {
                 case 3:
                     m = getText(input, fileArg, "encryptInput.txt");
                     pw = getUserText(input, "\nPlease enter a passphrase");
-                    cachedCryptgram = Kmacxof256.encrypt(m, pw);
+                    cachedCryptgram = app.encrypt(m, pw);
                     System.out.println("\nCryptogram is cached for remaining of runtime.\n");
                     break;
                 case 4:
                     if(cachedCryptgram != null) {
                         pw = getUserText(input, "Please enter the passphrase: ");
-                        System.out.println("\nDecrypted: " + Kmacxof256.decrypt(cachedCryptgram, pw) + "\n");
+                        System.out.println("\nDecrypted: " + app.decrypt(cachedCryptgram, pw) + "\n");
                     } else {
                         System.out.println("\nPlease cache a cryptogram first using Service 3.\n");
                     }
@@ -159,6 +171,47 @@ public class Main {
         }
     }
 
+    public static String[] parseKeyString(String keyStr) {
+        //keyStr is in format of (x, y)
+        String[] ret = new String[2]; //x at index 0, y at index 1.
+
+        //( at index 0, ) at last index.
+
+        keyStr = keyStr.substring(keyStr.indexOf('(') + 1, keyStr.indexOf(')'));
+
+        //Find index of ", "
+        int commaIndex = keyStr.indexOf(',');
+        ret[0] = keyStr.substring(0, commaIndex);
+        ret[1] = keyStr.substring(commaIndex + 2, keyStr.length());
+        return ret;
+    }
+/* 
+    public static String[] readFile(String path) {
+        try {
+            Scanner fileScan = new Scanner(new File(path));   
+            String line;
+            while(fileScan.hasNext()) {
+                line = fileScan.nextLine();
+                if(line.indexOf('(') != -1) {//Is it a point?
+
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Cryptogram File not found!");
+        }
+    }
+*/
+    public static void writeToFile(String contents, String path) {
+        try {
+            PrintStream p = new PrintStream(new File(path));
+            p.println(contents);
+            p.close();
+        } catch (FileNotFoundException f) {
+            System.out.println("Bad path entered, no file can be created.");
+        }
+    }
+
     /**
      * Prompts user in command line for message source and retrieves text from source.
      * 
@@ -170,7 +223,7 @@ public class Main {
     public static String getText(Scanner input, String argFileName, String fileName) {
         String ret;
         System.out.println("""
-            Select an Message Source:
+            Select an Text Source:
                 1. File Path From command line arguments (Ensure that format is: "java Main /path/to/file").
                 2. Pre-selected File Input
                 3. User Input
